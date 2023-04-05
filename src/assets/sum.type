@@ -1,3 +1,0 @@
-type sum = ``` "use js"
-    return globalContext.sum(1, 2);
-```

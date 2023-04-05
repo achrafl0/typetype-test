@@ -1,0 +1,61 @@
+export type function ComposableFunction = (A = any, B = any) => type (input: A) => Promise<B>
+
+export type function ComposeFns = (
+    ToReduceFunctions extends Array<ComposableFunction>,
+    PreviousResult extends Array<ComposableFunction> = []
+) => ^{
+    /**
+    * If (one functions)
+    */
+    if(ToReduceFunctions extends [
+        ComposableFunction<infer FirstFunctionInput,infer FirstFunctionOutput>]
+    ) {
+        return [
+            ...PreviousResult, 
+            ComposableFunction<FirstFunctionInput, FirstFunctionOutput>
+            ] 
+    } else if (ToReduceFunctions extends [ComposableFunction<infer Input, any>, ...infer Rest]){
+        return ^{
+            if (Rest extends [ComposableFunction<infer Output, any>, ...any[]]){
+                return ComposeFns<
+                        Rest, 
+                        [...PreviousResult, 
+                            ComposableFunction<Input, Output>]
+                        >
+            } else {
+                return PreviousResult
+            }
+        }
+    } else {
+        return PreviousResult
+    }
+}
+
+export type function ExtractComposeReturn = (
+    ComposableFunctions extends Array<ComposableFunction>
+) => ^{
+    if (ComposableFunctions extends [ComposableFunction<infer FirstInput, infer FirstOutput>, ...infer Rest]){
+        return ^{
+            if (Rest extends [...any[], ComposableFunction<any, infer LastOutput>]) {
+                return ComposableFunction<FirstInput, Awaited<LastOutput>>
+            } else {
+                return ComposableFunction<FirstInput, Awaited<FirstOutput>> 
+            }
+        }
+    } else {
+        return ComposableFunction<never, never>
+    }
+}
+
+type function AreComposable = (
+    ComposableFunctions extends Array<ComposableFunction>
+) => ^{
+    if (ComposeFns<ComposableFunctions> extends ComposableFunctions){
+        return ComposableFunctions
+    } else {
+        return ComposeFns<ComposableFunctions>
+    }
+}
+
+export type Compose = type <ComposableFunctions extends Array<ComposableFunction>>(...fns: AreComposable<ComposableFunctions>) => ExtractComposeReturn<ComposableFunctions>
+
