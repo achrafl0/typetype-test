@@ -1,15 +1,35 @@
-import { ComposableFunction, Compose } from "./assets/compose";
+import {
+  AreComposable,
+  ComposableFunction,
+  Compose,
+  ExtractComposeReturn,
+} from "./assets/compose";
+
+export const composePromise: Compose = <
+  ComposableFunctions extends Array<ComposableFunction>
+>(
+  ...fns: AreComposable<ComposableFunctions>
+): ExtractComposeReturn<ComposableFunctions> => {
+  return (fns as ComposableFunction<any, any>[]).reduce(
+    (prevFn, nextFn) => async (args) => {
+      const nextArg = await prevFn(args);
+
+      const result = await nextFn(nextArg);
+
+      return result;
+    },
+    (args) => args
+  ) as ExtractComposeReturn<ComposableFunctions>;
+};
 
 type User = {
   id: number;
   name: string;
 };
 
-let fn1: (id: string) => Promise<User>;
-let fn2: (user: User) => Promise<{ nbOfShipments: number }>;
-let fn3: ({ nbOfShipments }: { nbOfShipments: number }) => Promise<number[]>;
-let fn4: ComposableFunction<number[], User[]>;
+let fn1: (a: number) => Promise<string>;
+let fn2: (b: string) => Promise<string[]>; // String ->
+let fn3: (c: string[]) => Promise<number[]>;
+let fn4: (d: number[]) => Promise<User[]>;
 
-let compose: Compose; // Pas implementé, juste pour test les types
-
-let b = compose(fn1, fn2, fn3, fn4)("aze"); // User[]
+let b = composePromise(fn1, fn2, fn3, fn4)(32); // User[]

@@ -29,10 +29,11 @@ export type ExtractComposeReturn<
     : ComposableFunction<FirstInput, Awaited<FirstOutput>>
   : ComposableFunction<never, never>;
 
-type AreComposable<ComposableFunctions extends Array<ComposableFunction>> =
-  ComposeFns<ComposableFunctions> extends ComposableFunctions
-    ? ComposableFunctions
-    : ComposeFns<ComposableFunctions>;
+export type AreComposable<
+  ComposableFunctions extends Array<ComposableFunction>
+> = ComposeFns<ComposableFunctions> extends ComposableFunctions
+  ? ComposableFunctions
+  : ComposeFns<ComposableFunctions>;
 
 export type Compose = <ComposableFunctions extends Array<ComposableFunction>>(
   ...fns: AreComposable<ComposableFunctions>
